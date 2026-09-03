@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client"
+  output   = ".generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model counts {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_project String    @db.Uuid
+  logged_on  DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  projects   projects  @relation(fields: [id_project], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model projects {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_user     String    @db.Uuid
+  title       String    @db.VarChar(255)
+  description String?
+  started_on  DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  counts      counts[]
+  users       users     @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String     @unique @db.VarChar
+  password_hash String     @db.VarChar(60)
+  username      String     @db.VarChar(20)
+  created_at    DateTime?  @default(now()) @db.Timestamptz(6)
+  projects      projects[]
+}

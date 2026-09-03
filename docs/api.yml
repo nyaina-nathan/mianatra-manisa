@@ -1,0 +1,580 @@
+openapi: 3.0.3
+info:
+  title: Mianatra Manisa API
+  version: 0.1.0
+  description: >
+    REST API for Mianatra Manisa. Users register and authenticate via a
+    session cookie, own projects, and log counts on those projects.
+servers:
+  - url: http://localhost:3000/api
+tags:
+  - name: Auth
+    description: Registration and session management
+  - name: Projects
+    description: Project CRUD owned by the authenticated user
+  - name: Counts
+    description: Count entries nested under a project
+security:
+  - cookieAuth: []
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      operationId: registerUser
+      summary: Register a new user
+      description: Creates a user account. Authenticates afterwards via /auth/login.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInput'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      operationId: loginUser
+      summary: Log in
+      description: >
+        Validates credentials and sets the `session` HttpOnly cookie.
+        The cookie must be sent on subsequent requests.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '200':
+          description: Logged in; sets the session cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      operationId: logoutUser
+      summary: Log out
+      description: Invalidates the current session and clears the session cookie.
+      responses:
+        '204':
+          description: Logged out; session cookie cleared
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      operationId: getCurrentUser
+      summary: Get the authenticated user
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /projects:
+    get:
+      tags:
+        - Projects
+      operationId: listProjects
+      summary: List the authenticated user's projects
+      parameters:
+        - name: search
+          in: query
+          required: false
+          description: Case-insensitive match on project title
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Paginated projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags:
+        - Projects
+      operationId: createProject
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectInput'
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /projects/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      tags:
+        - Projects
+      operationId: getProject
+      summary: Get a project
+      responses:
+        '200':
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Projects
+      operationId: updateProject
+      summary: Update a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectInput'
+      responses:
+        '200':
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Projects
+      operationId: deleteProject
+      summary: Delete a project
+      description: Deletes the project and cascades to its counts.
+      responses:
+        '204':
+          description: Project deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /projects/{projectId}/counts:
+    parameters:
+      - $ref: '#/components/parameters/ProjectIdPath'
+    get:
+      tags:
+        - Counts
+      operationId: listProjectCounts
+      summary: List a project's counts
+      parameters:
+        - name: before
+          in: query
+          required: false
+          description: Only counts with logged_on strictly before this date
+          schema:
+            type: string
+            format: date
+        - name: after
+          in: query
+          required: false
+          description: Only counts with logged_on strictly after this date
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Paginated counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Counts
+      operationId: createProjectCount
+      summary: Create a count for a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCountInput'
+      responses:
+        '201':
+          description: Count created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /projects/{projectId}/counts/{countId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectIdPath'
+      - $ref: '#/components/parameters/CountIdPath'
+    get:
+      tags:
+        - Counts
+      operationId: getProjectCount
+      summary: Get a count
+      responses:
+        '200':
+          description: Count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Counts
+      operationId: updateProjectCount
+      summary: Update a count
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCountInput'
+      responses:
+        '200':
+          description: Updated count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Counts
+      operationId: deleteProjectCount
+      summary: Delete a count
+      responses:
+        '204':
+          description: Count deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+  parameters:
+    ProjectId:
+      name: id
+      in: path
+      required: true
+      description: Project ID
+      schema:
+        type: string
+        format: uuid
+    ProjectIdPath:
+      name: projectId
+      in: path
+      required: true
+      description: Project ID
+      schema:
+        type: string
+        format: uuid
+    CountIdPath:
+      name: countId
+      in: path
+      required: true
+      description: Count ID
+      schema:
+        type: string
+        format: uuid
+  responses:
+    ValidationError:
+      description: Invalid request body or query parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing, invalid, or expired session
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found or not owned by the authenticated user
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+          maxLength: 20
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - username
+        - created_at
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        id_user:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        started_on:
+          type: string
+          format: date
+          nullable: true
+      required:
+        - id
+        - id_user
+        - title
+        - description
+        - started_on
+    Count:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        id_project:
+          type: string
+          format: uuid
+        logged_on:
+          type: string
+          format: date
+          nullable: true
+      required:
+        - id
+        - id_project
+        - logged_on
+    RegisterInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+        username:
+          type: string
+          minLength: 1
+          maxLength: 20
+      required:
+        - email
+        - password
+        - username
+    LoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+      required:
+        - email
+        - password
+    CreateProjectInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        started_on:
+          type: string
+          format: date
+      required:
+        - title
+    UpdateProjectInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        started_on:
+          type: string
+          format: date
+          nullable: true
+    CreateCountInput:
+      type: object
+      properties:
+        logged_on:
+          type: string
+          format: date
+      description: Defaults to today when omitted.
+    UpdateCountInput:
+      type: object
+      properties:
+        logged_on:
+          type: string
+          format: date
+          nullable: true
+    ProjectList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        total:
+          type: integer
+      required:
+        - items
+        - total
+    CountList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Count'
+        total:
+          type: integer
+      required:
+        - items
+        - total
+    Error:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Short human-readable summary of the error type
+        status:
+          type: integer
+          description: HTTP status code of the response
+        message:
+          type: string
+          description: Human-readable detail
+        origin:
+          type: string
+          description: Source of the error (e.g. validation, auth, database)
+      required:
+        - title
+        - status
+        - message
+        - origin

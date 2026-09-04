@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ProjectDetailView } from "./_components/project-detail-view";
+import { ProjectDetailView } from "@/features/project/project-detail-view";
 
 export const metadata: Metadata = {
   title: "Project — Mianatra Manisa",

@@ -10,12 +10,12 @@ import {
   ApiClientError,
   ConfirmDialog,
   GENERIC_ERROR,
-  ProjectDialog,
   SessionExpired,
   UserHeader,
-} from "@/_components";
+} from "@/components";
 import { EntryDialog } from "./entry-dialog";
 import { EntryList } from "./entry-list";
+import { ProjectDialog } from "./project-dialog";
 
 const PAGE_SIZE = 20;
 

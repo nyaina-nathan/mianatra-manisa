@@ -7,11 +7,11 @@ import {
   ApiClientError,
   ConfirmDialog,
   GENERIC_ERROR,
-  ProjectDialog,
   SessionExpired,
   UserHeader,
-} from "@/_components";
+} from "@/components";
 import { ProjectCard } from "./project-card";
+import { ProjectDialog } from "@/features/project/project-dialog";
 
 const PAGE_SIZE = 20;
 

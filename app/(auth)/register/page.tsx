@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RegisterForm } from "../_components/register-form";
+import { RegisterForm } from "@/features/auth/register-form";
 
 export const metadata: Metadata = {
   title: "Create account — Mianatra Manisa",

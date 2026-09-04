@@ -1,52 +1,44 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import type { Count } from "@/libs/counts/types";
-import { Field } from "@/_components/field";
-import { api, ApiClientError, GENERIC_ERROR } from "@/_components/api";
-import { Dialog } from "@/_components/dialog";
+import type { Project } from "@/libs/projects/types";
+import { Field } from "@/components/field";
+import { api, ApiClientError, GENERIC_ERROR } from "@/components/api";
+import { Dialog } from "@/components/dialog";
 
-type EntryDialogProps = {
+type ProjectDialogProps = {
   open: boolean;
-  projectId: string;
-  entry: Count | null;
+  project: Project | null;
   onClose: () => void;
   onSaved: () => void;
 };
 
-export function EntryDialog({
+export function ProjectDialog({
   open,
-  projectId,
-  entry,
+  project,
   onClose,
   onSaved,
-}: EntryDialogProps) {
+}: ProjectDialogProps) {
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      title={entry ? "Edit entry" : "Add entry"}
+      title={project ? "Edit project" : "New project"}
     >
       {open ? (
-        <EntryForm
-          projectId={projectId}
-          entry={entry}
-          onClose={onClose}
-          onSaved={onSaved}
-        />
+        <ProjectForm project={project} onClose={onClose} onSaved={onSaved} />
       ) : null}
     </Dialog>
   );
 }
 
-type EntryFormProps = {
-  projectId: string;
-  entry: Count | null;
+type ProjectFormProps = {
+  project: Project | null;
   onClose: () => void;
   onSaved: () => void;
 };
 
-function EntryForm({ projectId, entry, onClose, onSaved }: EntryFormProps) {
+function ProjectForm({ project, onClose, onSaved }: ProjectFormProps) {
   const alertRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -55,22 +47,24 @@ function EntryForm({ projectId, entry, onClose, onSaved }: EntryFormProps) {
     event.preventDefault();
     if (pending) return;
     const data = new FormData(event.currentTarget);
-    const loggedOn = String(data.get("logged_on") ?? "");
-    const payload = entry
-      ? { logged_on: loggedOn ? loggedOn : null }
-      : loggedOn
-        ? { logged_on: loggedOn }
-        : {};
+    const title = String(data.get("title") ?? "").trim();
+    const description = String(data.get("description") ?? "").trim();
+    const startedOn = String(data.get("started_on") ?? "");
+    const payload = {
+      title,
+      description: description ? description : null,
+      started_on: startedOn ? startedOn : null,
+    };
     setPending(true);
     setError(null);
     try {
-      if (entry) {
-        await api<Count>(`/api/projects/${projectId}/counts/${entry.id}`, {
+      if (project) {
+        await api<Project>(`/api/projects/${project.id}`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
       } else {
-        await api<Count>(`/api/projects/${projectId}/counts`, {
+        await api<Project>("/api/projects", {
           method: "POST",
           body: JSON.stringify(payload),
         });
@@ -100,12 +94,38 @@ function EntryForm({ projectId, entry, onClose, onSaved }: EntryFormProps) {
         </div>
       ) : null}
       <Field
-        label="Logged on"
-        id="entry-logged-on"
-        name="logged_on"
+        label="Title"
+        id="project-title"
+        name="title"
+        type="text"
+        required
+        maxLength={255}
+        defaultValue={project?.title ?? ""}
+        autoFocus
+      />
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor="project-description"
+          className="text-sm font-medium text-ink"
+        >
+          Description
+        </label>
+        <textarea
+          id="project-description"
+          name="description"
+          rows={3}
+          defaultValue={project?.description ?? ""}
+          className="w-full rounded-sm border border-ink/50 bg-surface px-3 py-2 text-base text-ink placeholder:text-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        />
+        <p className="font-mono text-xs text-ink/60">Optional</p>
+      </div>
+      <Field
+        label="Started on"
+        id="project-started-on"
+        name="started_on"
         type="date"
-        defaultValue={entry?.logged_on ?? ""}
-        hint={entry ? "Optional — clearing removes the date" : "Optional — defaults to today"}
+        defaultValue={project?.started_on ?? ""}
+        hint="Optional"
       />
       <div className="mt-2 flex items-center justify-end gap-2">
         <button
@@ -122,12 +142,12 @@ function EntryForm({ projectId, entry, onClose, onSaved }: EntryFormProps) {
           className="h-10 rounded-sm bg-primary px-4 text-sm font-semibold text-ink hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending
-            ? entry
+            ? project
               ? "Saving…"
-              : "Adding…"
-            : entry
+              : "Creating…"
+            : project
               ? "Save changes"
-              : "Add entry"}
+              : "Create project"}
         </button>
       </div>
     </form>

@@ -1,44 +1,52 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import type { Project } from "@/libs/projects/types";
-import { Field } from "./field";
-import { api, ApiClientError, GENERIC_ERROR } from "./api";
-import { Dialog } from "./dialog";
+import type { Count } from "@/libs/counts/types";
+import { Field } from "@/components/field";
+import { api, ApiClientError, GENERIC_ERROR } from "@/components/api";
+import { Dialog } from "@/components/dialog";
 
-type ProjectDialogProps = {
+type EntryDialogProps = {
   open: boolean;
-  project: Project | null;
+  projectId: string;
+  entry: Count | null;
   onClose: () => void;
   onSaved: () => void;
 };
 
-export function ProjectDialog({
+export function EntryDialog({
   open,
-  project,
+  projectId,
+  entry,
   onClose,
   onSaved,
-}: ProjectDialogProps) {
+}: EntryDialogProps) {
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      title={project ? "Edit project" : "New project"}
+      title={entry ? "Edit entry" : "Add entry"}
     >
       {open ? (
-        <ProjectForm project={project} onClose={onClose} onSaved={onSaved} />
+        <EntryForm
+          projectId={projectId}
+          entry={entry}
+          onClose={onClose}
+          onSaved={onSaved}
+        />
       ) : null}
     </Dialog>
   );
 }
 
-type ProjectFormProps = {
-  project: Project | null;
+type EntryFormProps = {
+  projectId: string;
+  entry: Count | null;
   onClose: () => void;
   onSaved: () => void;
 };
 
-function ProjectForm({ project, onClose, onSaved }: ProjectFormProps) {
+function EntryForm({ projectId, entry, onClose, onSaved }: EntryFormProps) {
   const alertRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -47,24 +55,22 @@ function ProjectForm({ project, onClose, onSaved }: ProjectFormProps) {
     event.preventDefault();
     if (pending) return;
     const data = new FormData(event.currentTarget);
-    const title = String(data.get("title") ?? "").trim();
-    const description = String(data.get("description") ?? "").trim();
-    const startedOn = String(data.get("started_on") ?? "");
-    const payload = {
-      title,
-      description: description ? description : null,
-      started_on: startedOn ? startedOn : null,
-    };
+    const loggedOn = String(data.get("logged_on") ?? "");
+    const payload = entry
+      ? { logged_on: loggedOn ? loggedOn : null }
+      : loggedOn
+        ? { logged_on: loggedOn }
+        : {};
     setPending(true);
     setError(null);
     try {
-      if (project) {
-        await api<Project>(`/api/projects/${project.id}`, {
+      if (entry) {
+        await api<Count>(`/api/projects/${projectId}/counts/${entry.id}`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
       } else {
-        await api<Project>("/api/projects", {
+        await api<Count>(`/api/projects/${projectId}/counts`, {
           method: "POST",
           body: JSON.stringify(payload),
         });
@@ -94,38 +100,12 @@ function ProjectForm({ project, onClose, onSaved }: ProjectFormProps) {
         </div>
       ) : null}
       <Field
-        label="Title"
-        id="project-title"
-        name="title"
-        type="text"
-        required
-        maxLength={255}
-        defaultValue={project?.title ?? ""}
-        autoFocus
-      />
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="project-description"
-          className="text-sm font-medium text-ink"
-        >
-          Description
-        </label>
-        <textarea
-          id="project-description"
-          name="description"
-          rows={3}
-          defaultValue={project?.description ?? ""}
-          className="w-full rounded-sm border border-ink/50 bg-surface px-3 py-2 text-base text-ink placeholder:text-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
-        />
-        <p className="font-mono text-xs text-ink/60">Optional</p>
-      </div>
-      <Field
-        label="Started on"
-        id="project-started-on"
-        name="started_on"
+        label="Logged on"
+        id="entry-logged-on"
+        name="logged_on"
         type="date"
-        defaultValue={project?.started_on ?? ""}
-        hint="Optional"
+        defaultValue={entry?.logged_on ?? ""}
+        hint={entry ? "Optional — clearing removes the date" : "Optional — defaults to today"}
       />
       <div className="mt-2 flex items-center justify-end gap-2">
         <button
@@ -142,12 +122,12 @@ function ProjectForm({ project, onClose, onSaved }: ProjectFormProps) {
           className="h-10 rounded-sm bg-primary px-4 text-sm font-semibold text-ink hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending
-            ? project
+            ? entry
               ? "Saving…"
-              : "Creating…"
-            : project
+              : "Adding…"
+            : entry
               ? "Save changes"
-              : "Create project"}
+              : "Add entry"}
         </button>
       </div>
     </form>

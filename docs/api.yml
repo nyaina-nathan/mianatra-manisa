@@ -72,7 +72,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
-          description: Invalid email or password
+          description: Email not found or incorrect password
           content:
             application/json:
               schema:
@@ -83,12 +83,10 @@ paths:
         - Auth
       operationId: logoutUser
       summary: Log out
-      description: Invalidates the current session and clears the session cookie.
+      description: Clears the session cookie. Always succeeds, even without a session.
       responses:
         '204':
           description: Logged out; session cookie cleared
-        '401':
-          $ref: '#/components/responses/Unauthorized'
   /auth/me:
     get:
       tags:

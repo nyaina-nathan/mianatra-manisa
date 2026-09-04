@@ -7,14 +7,14 @@ if (!jwtSecret) {
 }
 const secret = new TextEncoder().encode(jwtSecret);
 
-const SESSION_DURATION = "7d";
+export const SESSION_DURATION_SECONDS = 7 * 24 * 60 * 60;
 
 export async function createToken(userId: string): Promise<string> {
   return new SignJWT()
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(userId)
     .setIssuedAt()
-    .setExpirationTime(SESSION_DURATION)
+    .setExpirationTime(Math.floor(Date.now() / 1000) + SESSION_DURATION_SECONDS)
     .sign(secret);
 }
 

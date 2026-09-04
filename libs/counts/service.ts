@@ -1,12 +1,11 @@
 import { prisma } from "../prisma";
 import { ApiError } from "../api-error";
 import {
-  assertUuid,
   parseCreateCountInput,
   parseListCountsQuery,
   parseUpdateCountInput,
-  toUtcDate,
 } from "./validation";
+import { assertUuid, toUtcDate } from "../validation";
 import type { Count, CountList, CountRow } from "./types";
 
 function serializeCount(row: CountRow): Count {

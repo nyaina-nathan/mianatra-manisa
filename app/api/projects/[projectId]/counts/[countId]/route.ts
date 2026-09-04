@@ -1,7 +1,7 @@
 import { route } from "@/libs/api-handler";
 import { requireUserId } from "@/libs/auth";
 import { countsService } from "@/libs/counts/service";
-import { readJsonBody } from "@/libs/counts/validation";
+import { readJsonBody } from "@/libs/validation";
 
 export const GET = route<{ projectId: string; countId: string }>(
   async (req, { params }) => {

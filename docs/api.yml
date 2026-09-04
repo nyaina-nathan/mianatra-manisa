@@ -175,7 +175,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Project'
+                $ref: '#/components/schemas/ProjectWithCount'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -442,6 +442,17 @@ components:
         - title
         - description
         - started_on
+    ProjectWithCount:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Project'
+        - type: object
+          properties:
+            total_count:
+              type: integer
+              description: Total number of count entries logged for the project
+          required:
+            - total_count
     Count:
       type: object
       properties:
@@ -538,7 +549,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/Project'
+            $ref: '#/components/schemas/ProjectWithCount'
         total:
           type: integer
       required:

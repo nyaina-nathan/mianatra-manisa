@@ -6,6 +6,10 @@ export type ProjectRow = {
   started_on: Date | null;
 };
 
+export type ProjectRowWithCount = ProjectRow & {
+  _count: { counts: number };
+};
+
 export type Project = {
   id: string;
   id_user: string;
@@ -14,8 +18,12 @@ export type Project = {
   started_on: string | null;
 };
 
+export type ProjectWithCount = Project & {
+  total_count: number;
+};
+
 export type ProjectList = {
-  items: Project[];
+  items: ProjectWithCount[];
   total: number;
 };
 

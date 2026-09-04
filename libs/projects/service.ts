@@ -6,7 +6,13 @@ import {
   parseUpdateProjectInput,
 } from "./validation";
 import { assertUuid, toUtcDate } from "../validation";
-import type { Project, ProjectList, ProjectRow } from "./types";
+import type {
+  Project,
+  ProjectList,
+  ProjectRow,
+  ProjectRowWithCount,
+  ProjectWithCount,
+} from "./types";
 
 function serializeProject(row: ProjectRow): Project {
   return {
@@ -18,9 +24,14 @@ function serializeProject(row: ProjectRow): Project {
   };
 }
 
+function serializeProjectWithCount(row: ProjectRowWithCount): ProjectWithCount {
+  return { ...serializeProject(row), total_count: row._count.counts };
+}
+
 async function requireOwnedProject(projectId: string, userId: string) {
   const project = await prisma.projects.findFirst({
     where: { id: projectId, id_user: userId },
+    include: { _count: { select: { counts: true } } },
   });
   if (!project) {
     throw ApiError.notFound("Project not found");
@@ -45,11 +56,12 @@ export const projectsService = {
         orderBy: { title: "asc" },
         take: query.limit,
         skip: query.offset,
+        include: { _count: { select: { counts: true } } },
       }),
       prisma.projects.count({ where }),
     ]);
 
-    return { items: rows.map(serializeProject), total };
+    return { items: rows.map(serializeProjectWithCount), total };
   },
 
   async create(userId: string, body: unknown): Promise<Project> {
@@ -67,10 +79,10 @@ export const projectsService = {
     return serializeProject(project);
   },
 
-  async get(userId: string, projectId: string): Promise<Project> {
+  async get(userId: string, projectId: string): Promise<ProjectWithCount> {
     assertUuid(projectId, "Project");
     const project = await requireOwnedProject(projectId, userId);
-    return serializeProject(project);
+    return serializeProjectWithCount(project);
   },
 
   async update(

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ProjectWithCount } from "@/libs/projects/types";
 
 type ProjectCardProps = {
@@ -21,7 +22,7 @@ export function ProjectCard({
   onDelete,
 }: ProjectCardProps) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-md border border-ink/50 bg-surface shadow-sm">
+    <article className="relative flex flex-col overflow-hidden rounded-md border border-ink/50 bg-surface shadow-sm transition-colors hover:border-secondary hover:shadow-md">
       <div className="flex h-28 flex-col items-center justify-center gap-1 bg-primary px-4">
         <p className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-ink">
           Counts
@@ -29,8 +30,14 @@ export function ProjectCard({
         <p className="text-2xl font-bold text-ink">{project.total_count}</p>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="truncate text-lg font-semibold text-ink" title={project.title}>
-          {project.title}
+        <h3 className="truncate text-lg font-semibold text-ink">
+          <Link
+            href={`/home/p/${project.id}`}
+            title={project.title}
+            className="after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+          >
+            {project.title}
+          </Link>
         </h3>
         <p className="line-clamp-2 text-sm text-ink/70">
           {project.description ? project.description : "No description yet."}
@@ -41,7 +48,7 @@ export function ProjectCard({
           </p>
         ) : null}
       </div>
-      <div className="flex items-center gap-2 border-t border-ink/50 p-3">
+      <div className="relative z-10 flex items-center gap-2 border-t border-ink/50 p-3">
         <button
           type="button"
           onClick={onQuickAdd}

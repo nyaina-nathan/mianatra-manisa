@@ -1,59 +1,69 @@
 "use client";
 
-import { useState } from "react";
-import type { ProjectWithCount } from "@/libs/projects/types";
-import { api, ApiClientError, GENERIC_ERROR } from "./api";
+import { useState, type ReactNode } from "react";
+import { GENERIC_ERROR } from "./api";
 import { Dialog } from "./dialog";
 
-type ConfirmDeleteDialogProps = {
+type ConfirmDialogProps = {
   open: boolean;
-  project: ProjectWithCount | null;
+  title: string;
+  body: ReactNode | null;
+  confirmLabel: string;
+  pendingLabel?: string;
   onClose: () => void;
-  onDeleted: () => void;
+  onConfirm: () => Promise<void>;
 };
 
-export function ConfirmDeleteDialog({
+export function ConfirmDialog({
   open,
-  project,
+  title,
+  body,
+  confirmLabel,
+  pendingLabel = "Working…",
   onClose,
-  onDeleted,
-}: ConfirmDeleteDialogProps) {
+  onConfirm,
+}: ConfirmDialogProps) {
   return (
-    <Dialog open={open} onClose={onClose} title="Delete project?">
-      {open && project ? (
-        <ConfirmDeleteBody
-          project={project}
+    <Dialog open={open} onClose={onClose} title={title}>
+      {open && body !== null ? (
+        <ConfirmBody
+          body={body}
+          confirmLabel={confirmLabel}
+          pendingLabel={pendingLabel}
           onClose={onClose}
-          onDeleted={onDeleted}
+          onConfirm={onConfirm}
         />
       ) : null}
     </Dialog>
   );
 }
 
-type ConfirmDeleteBodyProps = {
-  project: ProjectWithCount;
+type ConfirmBodyProps = {
+  body: ReactNode;
+  confirmLabel: string;
+  pendingLabel: string;
   onClose: () => void;
-  onDeleted: () => void;
+  onConfirm: () => Promise<void>;
 };
 
-function ConfirmDeleteBody({
-  project,
+function ConfirmBody({
+  body,
+  confirmLabel,
+  pendingLabel,
   onClose,
-  onDeleted,
-}: ConfirmDeleteBodyProps) {
+  onConfirm,
+}: ConfirmBodyProps) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  async function handleDelete() {
+  async function handleConfirm() {
     if (pending) return;
     setPending(true);
     setError(null);
     try {
-      await api(`/api/projects/${project.id}`, { method: "DELETE" });
-      onDeleted();
+      await onConfirm();
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : GENERIC_ERROR);
+      setError(err instanceof Error ? err.message : GENERIC_ERROR);
     } finally {
       setPending(false);
     }
@@ -66,14 +76,7 @@ function ConfirmDeleteBody({
           <p className="text-sm text-danger-dark">{error}</p>
         </div>
       ) : null}
-      <p className="text-sm text-ink/70">
-        This permanently deletes{" "}
-        <span className="font-semibold text-ink">
-          &ldquo;{project.title}&rdquo;
-        </span>{" "}
-        and its {project.total_count}{" "}
-        {project.total_count === 1 ? "count" : "counts"}.
-      </p>
+      {body}
       <div className="flex items-center justify-end gap-2">
         <button
           type="button"
@@ -85,12 +88,12 @@ function ConfirmDeleteBody({
         </button>
         <button
           type="button"
-          onClick={handleDelete}
+          onClick={handleConfirm}
           disabled={pending}
           aria-busy={pending}
           className="h-10 rounded-sm bg-danger px-4 text-sm font-semibold text-white hover:bg-danger-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Deleting…" : "Delete"}
+          {pending ? pendingLabel : confirmLabel}
         </button>
       </div>
     </div>

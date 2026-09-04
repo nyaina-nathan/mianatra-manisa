@@ -2,7 +2,7 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import type { Project } from "@/libs/projects/types";
-import { Field } from "../../../_components/field";
+import { Field } from "./field";
 import { api, ApiClientError, GENERIC_ERROR } from "./api";
 import { Dialog } from "./dialog";
 

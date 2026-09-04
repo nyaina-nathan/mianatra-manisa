@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/_components": ["./app/_components/index.ts"],
+      "@/_components/*": ["./app/_components/*"]
     }
   },
   "include": [

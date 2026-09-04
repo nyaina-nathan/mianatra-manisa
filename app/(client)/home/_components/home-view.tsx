@@ -1,13 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { ProjectList, ProjectWithCount } from "@/libs/projects/types";
-import { api, ApiClientError, GENERIC_ERROR } from "./api";
-import { ConfirmDeleteDialog } from "./confirm-delete-dialog";
+import {
+  api,
+  ApiClientError,
+  ConfirmDialog,
+  GENERIC_ERROR,
+  ProjectDialog,
+  SessionExpired,
+  UserHeader,
+} from "@/_components";
 import { ProjectCard } from "./project-card";
-import { ProjectDialog } from "./project-dialog";
-import { UserHeader } from "./user-header";
 
 const PAGE_SIZE = 20;
 
@@ -134,31 +138,24 @@ export function HomeView() {
     }
   }
 
-  function handleListRefresh() {
+  async function handleProjectDelete() {
+    if (dialogState.kind !== "delete") return;
+    const projectId = dialogState.project.id;
+    try {
+      await api(`/api/projects/${projectId}`, { method: "DELETE" });
+    } catch (err) {
+      if (err instanceof ApiClientError && err.isExpired) {
+        setExpired(true);
+        return;
+      }
+      throw err;
+    }
     setDialogState(CLOSED);
     void load();
   }
 
   if (expired) {
-    return (
-      <main className="flex min-h-dvh flex-col items-center justify-center bg-cream px-6 text-center">
-        <p className="font-mono text-xs font-medium uppercase tracking-[0.25em] text-secondary-dark">
-          Session expired
-        </p>
-        <h1 className="mt-2 text-2xl font-bold text-ink">
-          Your session has ended.
-        </h1>
-        <p className="mt-2 text-sm text-ink/70">
-          Log in again to keep counting.
-        </p>
-        <Link
-          href="/login"
-          className="mt-6 flex h-10 items-center rounded-sm bg-primary px-4 text-sm font-semibold text-ink hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
-        >
-          Log in
-        </Link>
-      </main>
-    );
+    return <SessionExpired />;
   }
 
   return (
@@ -271,13 +268,30 @@ export function HomeView() {
         open={dialogState.kind === "create" || dialogState.kind === "edit"}
         project={dialogState.kind === "edit" ? dialogState.project : null}
         onClose={() => setDialogState(CLOSED)}
-        onSaved={handleListRefresh}
+        onSaved={() => {
+          setDialogState(CLOSED);
+          void load();
+        }}
       />
-      <ConfirmDeleteDialog
+      <ConfirmDialog
         open={dialogState.kind === "delete"}
-        project={dialogState.kind === "delete" ? dialogState.project : null}
+        title="Delete project?"
+        confirmLabel="Delete"
+        pendingLabel="Deleting…"
         onClose={() => setDialogState(CLOSED)}
-        onDeleted={handleListRefresh}
+        onConfirm={handleProjectDelete}
+        body={
+          dialogState.kind === "delete" ? (
+            <p className="text-sm text-ink/70">
+              This permanently deletes{" "}
+              <span className="font-semibold text-ink">
+                &ldquo;{dialogState.project.title}&rdquo;
+              </span>{" "}
+              and its {dialogState.project.total_count}{" "}
+              {dialogState.project.total_count === 1 ? "count" : "counts"}.
+            </p>
+          ) : null
+        }
       />
     </div>
   );

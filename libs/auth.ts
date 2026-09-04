@@ -1,10 +1,11 @@
 import type { NextRequest } from "next/server";
 import { ApiError } from "./api-error";
+import { verifyToken } from "./jwt";
 
-export function requireUserId(req: NextRequest): string {
+export async function requireUserId(req: NextRequest): Promise<string> {
   const session = req.cookies.get("session")?.value;
   if (!session) {
     throw ApiError.unauthorized();
   }
-  return session;
+  return verifyToken(session);
 }

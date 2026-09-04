@@ -5,7 +5,7 @@ import { readJsonBody } from "@/libs/counts/validation";
 
 export const GET = route<{ projectId: string; countId: string }>(
   async (req, { params }) => {
-    const userId = requireUserId(req);
+    const userId = await requireUserId(req);
     const { projectId, countId } = await params;
     return Response.json(await countsService.get(projectId, userId, countId));
   }
@@ -13,7 +13,7 @@ export const GET = route<{ projectId: string; countId: string }>(
 
 export const PATCH = route<{ projectId: string; countId: string }>(
   async (req, { params }) => {
-    const userId = requireUserId(req);
+    const userId = await requireUserId(req);
     const { projectId, countId } = await params;
     const body = await readJsonBody(req);
     return Response.json(
@@ -24,7 +24,7 @@ export const PATCH = route<{ projectId: string; countId: string }>(
 
 export const DELETE = route<{ projectId: string; countId: string }>(
   async (req, { params }) => {
-    const userId = requireUserId(req);
+    const userId = await requireUserId(req);
     const { projectId, countId } = await params;
     await countsService.remove(projectId, userId, countId);
     return new Response(null, { status: 204 });

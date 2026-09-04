@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Field } from "./field";
+import { Field } from "../../_components/field";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 

@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { ApiError } from "./api-error";
 import { verifyToken, SESSION_DURATION_SECONDS } from "./jwt";
 
-const SESSION_COOKIE = "session";
+export const SESSION_COOKIE = "session";
 
 export async function requireUserId(req: NextRequest): Promise<string> {
   const session = req.cookies.get(SESSION_COOKIE)?.value;

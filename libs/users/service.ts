@@ -3,6 +3,7 @@ import { prisma } from "../prisma";
 import { ApiError } from "../api-error";
 import { parseLoginInput, parseRegisterInput } from "./validation";
 import type { User, UserRow } from "./types";
+import { Resend } from 'resend';
 
 const BCRYPT_COST = 10;
 
@@ -33,6 +34,16 @@ export const usersService = {
         password_hash: await bcrypt.hash(input.password, BCRYPT_COST),
         username: input.username,
       },
+    });
+
+
+    const resend = new Resend(process.env.RESEND_SECRET_KEY);
+
+    resend.emails.send({
+      from: 'support@resend.dev',
+      to: user.email,
+      subject: 'Welcome to mianatra manisa',
+      html: '<p>Welcome to this simple ahh project<strong>MIANATRA </strong>!</p>'
     });
 
     return serializeUser(user);

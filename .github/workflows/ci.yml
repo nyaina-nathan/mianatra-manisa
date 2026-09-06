@@ -28,3 +28,6 @@ jobs:
 
       - name: Build (catches type errors too)
         run: npm run build
+        env:
+          JWT_SECRET : ${{secrets.JWT_SECRET}}
+          DATABASE_URL : ${{secrets.DATABASE_URL}}

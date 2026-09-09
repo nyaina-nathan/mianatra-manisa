@@ -466,10 +466,14 @@ components:
           type: string
           format: date
           nullable: true
+        description:
+          type: string
+          nullable: true
       required:
         - id
         - id_project
         - logged_on
+        - description
     RegisterInput:
       type: object
       properties:
@@ -535,6 +539,8 @@ components:
         logged_on:
           type: string
           format: date
+        description:
+          type: string
       description: Defaults to today when omitted.
     UpdateCountInput:
       type: object
@@ -542,6 +548,9 @@ components:
         logged_on:
           type: string
           format: date
+          nullable: true
+        description:
+          type: string
           nullable: true
     ProjectList:
       type: object

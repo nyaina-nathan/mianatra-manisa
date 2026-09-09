@@ -48,18 +48,21 @@ const countRow = {
   id: COUNT_ID,
   id_project: PROJECT_ID,
   logged_on: new Date("2026-01-02T00:00:00.000Z"),
+  description: null,
 };
 
 const nullLoggedCountRow = {
   id: OTHER_COUNT_ID,
   id_project: PROJECT_ID,
   logged_on: null,
+  description: null,
 };
 
 const serializedCount = {
   id: COUNT_ID,
   id_project: PROJECT_ID,
   logged_on: "2026-01-02",
+  description: null,
 };
 
 const errorWith = (status: number, message: string) => ({
@@ -114,7 +117,7 @@ describe("countsService.list", () => {
 
     expect(result).toEqual({
       items: [
-        { id: OTHER_COUNT_ID, id_project: PROJECT_ID, logged_on: null },
+        { id: OTHER_COUNT_ID, id_project: PROJECT_ID, logged_on: null, description: null },
       ],
       total: 1,
     });
@@ -207,9 +210,31 @@ describe("countsService.create", () => {
       data: {
         id_project: PROJECT_ID,
         logged_on: new Date("2026-01-02T00:00:00.000Z"),
+        description: null,
       },
     });
     expect(result).toEqual(serializedCount);
+  });
+
+  it("creates a count with a description", async () => {
+    db.projects.findFirst.mockResolvedValue(ownedProject);
+    db.counts.create.mockResolvedValue({
+      ...countRow,
+      description: "Morning run",
+    });
+
+    const result = await countsService.create(PROJECT_ID, USER_ID, {
+      description: "Morning run",
+    });
+
+    expect(db.counts.create).toHaveBeenCalledWith({
+      data: {
+        id_project: PROJECT_ID,
+        logged_on: undefined,
+        description: "Morning run",
+      },
+    });
+    expect(result).toEqual({ ...serializedCount, description: "Morning run" });
   });
 
   it("creates a count without a date when logged_on is omitted", async () => {
@@ -219,12 +244,13 @@ describe("countsService.create", () => {
     const result = await countsService.create(PROJECT_ID, USER_ID, {});
 
     expect(db.counts.create).toHaveBeenCalledWith({
-      data: { id_project: PROJECT_ID, logged_on: undefined },
+      data: { id_project: PROJECT_ID, logged_on: undefined, description: null },
     });
     expect(result).toEqual({
       id: OTHER_COUNT_ID,
       id_project: PROJECT_ID,
       logged_on: null,
+      description: null,
     });
   });
 
@@ -250,6 +276,7 @@ describe("countsService.create", () => {
     ["a non date logged_on", { logged_on: 42 }, "logged_on must be a date string (YYYY-MM-DD)"],
     ["a wrongly formatted logged_on", { logged_on: "01/02/2026" }, "logged_on must be a date string (YYYY-MM-DD)"],
     ["an impossible logged_on date", { logged_on: "2026-02-30" }, "logged_on must be a date string (YYYY-MM-DD)"],
+    ["a non string description", { description: 42 }, "description must be a string"],
   ])("throws 400 for %s", async (_name, body, message) => {
     await expect(
       countsService.create(PROJECT_ID, USER_ID, body)
@@ -330,10 +357,58 @@ describe("countsService.update", () => {
       id: COUNT_ID,
       id_project: PROJECT_ID,
       logged_on: "2026-03-01",
+      description: null,
     });
   });
 
-  it("returns the existing count without updating when logged_on is omitted", async () => {
+  it("updates description when provided", async () => {
+    db.projects.findFirst.mockResolvedValue(ownedProject);
+    db.counts.findFirst.mockResolvedValue(countRow);
+    db.counts.update.mockResolvedValue({
+      ...countRow,
+      description: "Evening run",
+    });
+
+    const result = await countsService.update(
+      PROJECT_ID,
+      USER_ID,
+      COUNT_ID,
+      { description: "Evening run" }
+    );
+
+    expect(db.counts.update).toHaveBeenCalledWith({
+      where: { id: COUNT_ID },
+      data: { description: "Evening run" },
+    });
+    expect(result).toEqual({
+      ...serializedCount,
+      description: "Evening run",
+    });
+  });
+
+  it("clears description when null is provided", async () => {
+    db.projects.findFirst.mockResolvedValue(ownedProject);
+    db.counts.findFirst.mockResolvedValue({
+      ...countRow,
+      description: "Evening run",
+    });
+    db.counts.update.mockResolvedValue(countRow);
+
+    const result = await countsService.update(
+      PROJECT_ID,
+      USER_ID,
+      COUNT_ID,
+      { description: null }
+    );
+
+    expect(db.counts.update).toHaveBeenCalledWith({
+      where: { id: COUNT_ID },
+      data: { description: null },
+    });
+    expect(result).toEqual(serializedCount);
+  });
+
+  it("returns the existing count without updating when no field is provided", async () => {
     db.projects.findFirst.mockResolvedValue(ownedProject);
     db.counts.findFirst.mockResolvedValue(countRow);
 
@@ -368,6 +443,7 @@ describe("countsService.update", () => {
       id: OTHER_COUNT_ID,
       id_project: PROJECT_ID,
       logged_on: null,
+      description: null,
     });
   });
 
@@ -408,6 +484,7 @@ describe("countsService.update", () => {
     ["a null body", null, "Request body must be a JSON object"],
     ["a non date logged_on", { logged_on: 42 }, "logged_on must be a date string (YYYY-MM-DD)"],
     ["a wrongly formatted logged_on", { logged_on: "01/02/2026" }, "logged_on must be a date string (YYYY-MM-DD)"],
+    ["a non string description", { description: 42 }, "description must be a string"],
   ])("throws 400 for %s", async (_name, body, message) => {
     await expect(
       countsService.update(PROJECT_ID, USER_ID, COUNT_ID, body)

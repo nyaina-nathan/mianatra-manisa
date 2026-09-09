@@ -13,6 +13,7 @@ function serializeCount(row: CountRow): Count {
     id: row.id,
     id_project: row.id_project,
     logged_on: row.logged_on ? row.logged_on.toISOString().slice(0, 10) : null,
+    description: row.description,
   };
 }
 
@@ -76,6 +77,7 @@ export const countsService = {
       data: {
         id_project: projectId,
         logged_on: input.logged_on ? toUtcDate(input.logged_on) : undefined,
+        description: input.description ?? null,
       },
     });
 
@@ -102,14 +104,23 @@ export const countsService = {
     await requireOwnedProject(projectId, userId);
     const existing = await requireProjectCount(projectId, countId);
 
-    if (input.logged_on === undefined) {
+    const hasChanges =
+      input.logged_on !== undefined || input.description !== undefined;
+
+    if (!hasChanges) {
       return serializeCount(existing);
     }
 
     const count = await prisma.counts.update({
       where: { id: countId },
       data: {
-        logged_on: input.logged_on === null ? null : toUtcDate(input.logged_on),
+        ...(input.logged_on !== undefined && {
+          logged_on:
+            input.logged_on === null ? null : toUtcDate(input.logged_on),
+        }),
+        ...(input.description !== undefined && {
+          description: input.description,
+        }),
       },
     });
 

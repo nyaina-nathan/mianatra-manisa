@@ -56,11 +56,16 @@ function EntryForm({ projectId, entry, onClose, onSaved }: EntryFormProps) {
     if (pending) return;
     const data = new FormData(event.currentTarget);
     const loggedOn = String(data.get("logged_on") ?? "");
+    const description = String(data.get("description") ?? "").trim();
     const payload = entry
-      ? { logged_on: loggedOn ? loggedOn : null }
-      : loggedOn
-        ? { logged_on: loggedOn }
-        : {};
+      ? {
+          logged_on: loggedOn ? loggedOn : null,
+          description: description ? description : null,
+        }
+      : {
+          ...(loggedOn && { logged_on: loggedOn }),
+          ...(description && { description }),
+        };
     setPending(true);
     setError(null);
     try {
@@ -107,6 +112,22 @@ function EntryForm({ projectId, entry, onClose, onSaved }: EntryFormProps) {
         defaultValue={entry?.logged_on ?? ""}
         hint={entry ? "Optional — clearing removes the date" : "Optional — defaults to today"}
       />
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor="entry-description"
+          className="text-sm font-medium text-ink"
+        >
+          Description
+        </label>
+        <textarea
+          id="entry-description"
+          name="description"
+          rows={3}
+          defaultValue={entry?.description ?? ""}
+          className="w-full rounded-sm border border-ink/50 bg-surface px-3 py-2 text-base text-ink placeholder:text-ink/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        />
+        <p className="font-mono text-xs text-ink/60">Optional</p>
+      </div>
       <div className="mt-2 flex items-center justify-end gap-2">
         <button
           type="button"

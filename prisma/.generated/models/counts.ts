@@ -28,18 +28,21 @@ export type CountsMinAggregateOutputType = {
   id: string | null
   id_project: string | null
   logged_on: Date | null
+  description: string | null
 }
 
 export type CountsMaxAggregateOutputType = {
   id: string | null
   id_project: string | null
   logged_on: Date | null
+  description: string | null
 }
 
 export type CountsCountAggregateOutputType = {
   id: number
   id_project: number
   logged_on: number
+  description: number
   _all: number
 }
 
@@ -48,18 +51,21 @@ export type CountsMinAggregateInputType = {
   id?: true
   id_project?: true
   logged_on?: true
+  description?: true
 }
 
 export type CountsMaxAggregateInputType = {
   id?: true
   id_project?: true
   logged_on?: true
+  description?: true
 }
 
 export type CountsCountAggregateInputType = {
   id?: true
   id_project?: true
   logged_on?: true
+  description?: true
   _all?: true
 }
 
@@ -139,6 +145,7 @@ export type CountsGroupByOutputType = {
   id: string
   id_project: string
   logged_on: Date | null
+  description: string | null
   _count: CountsCountAggregateOutputType | null
   _min: CountsMinAggregateOutputType | null
   _max: CountsMaxAggregateOutputType | null
@@ -166,6 +173,7 @@ export type countsWhereInput = {
   id?: Prisma.UuidFilter<"counts"> | string
   id_project?: Prisma.UuidFilter<"counts"> | string
   logged_on?: Prisma.DateTimeNullableFilter<"counts"> | Date | string | null
+  description?: Prisma.StringNullableFilter<"counts"> | string | null
   projects?: Prisma.XOR<Prisma.ProjectsScalarRelationFilter, Prisma.projectsWhereInput>
 }
 
@@ -173,6 +181,7 @@ export type countsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   id_project?: Prisma.SortOrder
   logged_on?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   projects?: Prisma.projectsOrderByWithRelationInput
 }
 
@@ -183,6 +192,7 @@ export type countsWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.countsWhereInput | Prisma.countsWhereInput[]
   id_project?: Prisma.UuidFilter<"counts"> | string
   logged_on?: Prisma.DateTimeNullableFilter<"counts"> | Date | string | null
+  description?: Prisma.StringNullableFilter<"counts"> | string | null
   projects?: Prisma.XOR<Prisma.ProjectsScalarRelationFilter, Prisma.projectsWhereInput>
 }, "id">
 
@@ -190,6 +200,7 @@ export type countsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   id_project?: Prisma.SortOrder
   logged_on?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.countsCountOrderByAggregateInput
   _max?: Prisma.countsMaxOrderByAggregateInput
   _min?: Prisma.countsMinOrderByAggregateInput
@@ -202,11 +213,13 @@ export type countsScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"counts"> | string
   id_project?: Prisma.UuidWithAggregatesFilter<"counts"> | string
   logged_on?: Prisma.DateTimeNullableWithAggregatesFilter<"counts"> | Date | string | null
+  description?: Prisma.StringNullableWithAggregatesFilter<"counts"> | string | null
 }
 
 export type countsCreateInput = {
   id?: string
   logged_on?: Date | string | null
+  description?: string | null
   projects: Prisma.projectsCreateNestedOneWithoutCountsInput
 }
 
@@ -214,11 +227,13 @@ export type countsUncheckedCreateInput = {
   id?: string
   id_project: string
   logged_on?: Date | string | null
+  description?: string | null
 }
 
 export type countsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   logged_on?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   projects?: Prisma.projectsUpdateOneRequiredWithoutCountsNestedInput
 }
 
@@ -226,41 +241,48 @@ export type countsUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   id_project?: Prisma.StringFieldUpdateOperationsInput | string
   logged_on?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type countsCreateManyInput = {
   id?: string
   id_project: string
   logged_on?: Date | string | null
+  description?: string | null
 }
 
 export type countsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   logged_on?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type countsUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   id_project?: Prisma.StringFieldUpdateOperationsInput | string
   logged_on?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type countsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   id_project?: Prisma.SortOrder
   logged_on?: Prisma.SortOrder
+  description?: Prisma.SortOrder
 }
 
 export type countsMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   id_project?: Prisma.SortOrder
   logged_on?: Prisma.SortOrder
+  description?: Prisma.SortOrder
 }
 
 export type countsMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   id_project?: Prisma.SortOrder
   logged_on?: Prisma.SortOrder
+  description?: Prisma.SortOrder
 }
 
 export type CountsListRelationFilter = {
@@ -279,6 +301,10 @@ export type StringFieldUpdateOperationsInput = {
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type countsCreateNestedManyWithoutProjectsInput = {
@@ -326,11 +352,13 @@ export type countsUncheckedUpdateManyWithoutProjectsNestedInput = {
 export type countsCreateWithoutProjectsInput = {
   id?: string
   logged_on?: Date | string | null
+  description?: string | null
 }
 
 export type countsUncheckedCreateWithoutProjectsInput = {
   id?: string
   logged_on?: Date | string | null
+  description?: string | null
 }
 
 export type countsCreateOrConnectWithoutProjectsInput = {
@@ -366,26 +394,31 @@ export type countsScalarWhereInput = {
   id?: Prisma.UuidFilter<"counts"> | string
   id_project?: Prisma.UuidFilter<"counts"> | string
   logged_on?: Prisma.DateTimeNullableFilter<"counts"> | Date | string | null
+  description?: Prisma.StringNullableFilter<"counts"> | string | null
 }
 
 export type countsCreateManyProjectsInput = {
   id?: string
   logged_on?: Date | string | null
+  description?: string | null
 }
 
 export type countsUpdateWithoutProjectsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   logged_on?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type countsUncheckedUpdateWithoutProjectsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   logged_on?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type countsUncheckedUpdateManyWithoutProjectsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   logged_on?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -394,6 +427,7 @@ export type countsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   id_project?: boolean
   logged_on?: boolean
+  description?: boolean
   projects?: boolean | Prisma.projectsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["counts"]>
 
@@ -401,6 +435,7 @@ export type countsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   id_project?: boolean
   logged_on?: boolean
+  description?: boolean
   projects?: boolean | Prisma.projectsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["counts"]>
 
@@ -408,6 +443,7 @@ export type countsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   id_project?: boolean
   logged_on?: boolean
+  description?: boolean
   projects?: boolean | Prisma.projectsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["counts"]>
 
@@ -415,9 +451,10 @@ export type countsSelectScalar = {
   id?: boolean
   id_project?: boolean
   logged_on?: boolean
+  description?: boolean
 }
 
-export type countsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "id_project" | "logged_on", ExtArgs["result"]["counts"]>
+export type countsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "id_project" | "logged_on" | "description", ExtArgs["result"]["counts"]>
 export type countsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   projects?: boolean | Prisma.projectsDefaultArgs<ExtArgs>
 }
@@ -437,6 +474,7 @@ export type $countsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     id_project: string
     logged_on: Date | null
+    description: string | null
   }, ExtArgs["result"]["counts"]>
   composites: {}
 }
@@ -864,6 +902,7 @@ export interface countsFieldRefs {
   readonly id: Prisma.FieldRef<"counts", 'String'>
   readonly id_project: Prisma.FieldRef<"counts", 'String'>
   readonly logged_on: Prisma.FieldRef<"counts", 'DateTime'>
+  readonly description: Prisma.FieldRef<"counts", 'String'>
 }
     
 

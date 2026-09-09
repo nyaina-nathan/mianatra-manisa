@@ -683,7 +683,8 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const CountsScalarFieldEnum = {
   id: 'id',
   id_project: 'id_project',
-  logged_on: 'logged_on'
+  logged_on: 'logged_on',
+  description: 'description'
 } as const
 
 export type CountsScalarFieldEnum = (typeof CountsScalarFieldEnum)[keyof typeof CountsScalarFieldEnum]

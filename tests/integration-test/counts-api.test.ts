@@ -226,12 +226,39 @@ describe("POST /api/projects/:projectId/counts", () => {
       id: expect.any(String),
       id_project: project.id,
       logged_on: "2026-01-02",
+      description: null,
     });
 
     const row = await prisma.counts.findFirst({
       where: { id: (res.body as Count).id },
     });
     expect(row?.logged_on?.toISOString()).toBe("2026-01-02T00:00:00.000Z");
+  });
+
+  it("creates a count with a description", async () => {
+    const user = await registerUser();
+    const project = await createProject(user.cookie);
+
+    const res = await callRoute(createCountRoute, {
+      method: "POST",
+      path: `/api/projects/${project.id}/counts`,
+      body: { description: "Morning run" },
+      cookie: user.cookie,
+      params: { projectId: project.id },
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body).toEqual({
+      id: expect.any(String),
+      id_project: project.id,
+      logged_on: new Date().toISOString().slice(0, 10),
+      description: "Morning run",
+    });
+
+    const row = await prisma.counts.findFirst({
+      where: { id: (res.body as Count).id },
+    });
+    expect(row?.description).toBe("Morning run");
   });
 
   it("defaults logged_on to today when omitted", async () => {
@@ -251,6 +278,7 @@ describe("POST /api/projects/:projectId/counts", () => {
       id: expect.any(String),
       id_project: project.id,
       logged_on: new Date().toISOString().slice(0, 10),
+      description: null,
     });
   });
 
@@ -259,6 +287,7 @@ describe("POST /api/projects/:projectId/counts", () => {
     ["a non date logged_on", { logged_on: 42 }, "logged_on must be a date string (YYYY-MM-DD)"],
     ["a wrongly formatted logged_on", { logged_on: "01/02/2026" }, "logged_on must be a date string (YYYY-MM-DD)"],
     ["an impossible logged_on date", { logged_on: "2026-02-30" }, "logged_on must be a date string (YYYY-MM-DD)"],
+    ["a non string description", { description: 42 }, "description must be a string"],
   ])("returns 400 for %s", async (_name, body, message) => {
     const user = await registerUser();
     const project = await createProject(user.cookie);
@@ -476,10 +505,77 @@ describe("PATCH /api/projects/:projectId/counts/:countId", () => {
     expect(row?.logged_on).toBeNull();
   });
 
+  it("updates description and persists it", async () => {
+    const user = await registerUser();
+    const project = await createProject(user.cookie);
+    const count = await createCount(project.id, user.cookie);
+
+    const res = await callRoute(updateCount, {
+      method: "PATCH",
+      path: `/api/projects/${project.id}/counts/${count.id}`,
+      body: { description: "Morning run" },
+      cookie: user.cookie,
+      params: { projectId: project.id, countId: count.id },
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ...count, description: "Morning run" });
+
+    const row = await prisma.counts.findFirst({ where: { id: count.id } });
+    expect(row?.description).toBe("Morning run");
+  });
+
+  it("updates description and logged_on together", async () => {
+    const user = await registerUser();
+    const project = await createProject(user.cookie);
+    const count = await createCount(project.id, user.cookie, {
+      logged_on: "2026-01-02",
+      description: "Morning run",
+    });
+
+    const res = await callRoute(updateCount, {
+      method: "PATCH",
+      path: `/api/projects/${project.id}/counts/${count.id}`,
+      body: { logged_on: "2026-03-01", description: "Evening run" },
+      cookie: user.cookie,
+      params: { projectId: project.id, countId: count.id },
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ...count,
+      logged_on: "2026-03-01",
+      description: "Evening run",
+    });
+  });
+
+  it("clears description when nulled", async () => {
+    const user = await registerUser();
+    const project = await createProject(user.cookie);
+    const count = await createCount(project.id, user.cookie, {
+      description: "Morning run",
+    });
+
+    const res = await callRoute(updateCount, {
+      method: "PATCH",
+      path: `/api/projects/${project.id}/counts/${count.id}`,
+      body: { description: null },
+      cookie: user.cookie,
+      params: { projectId: project.id, countId: count.id },
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ...count, description: null });
+
+    const row = await prisma.counts.findFirst({ where: { id: count.id } });
+    expect(row?.description).toBeNull();
+  });
+
   it.each<[string, unknown, string]>([
     ["a null body", null, "Request body must be a JSON object"],
     ["a non date logged_on", { logged_on: 42 }, "logged_on must be a date string (YYYY-MM-DD)"],
     ["a wrongly formatted logged_on", { logged_on: "01/02/2026" }, "logged_on must be a date string (YYYY-MM-DD)"],
+    ["a non string description", { description: 42 }, "description must be a string"],
   ])("returns 400 for %s", async (_name, body, message) => {
     const user = await registerUser();
     const project = await createProject(user.cookie);

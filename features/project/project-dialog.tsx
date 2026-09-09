@@ -50,11 +50,17 @@ function ProjectForm({ project, onClose, onSaved }: ProjectFormProps) {
     const title = String(data.get("title") ?? "").trim();
     const description = String(data.get("description") ?? "").trim();
     const startedOn = String(data.get("started_on") ?? "");
-    const payload = {
-      title,
-      description: description ? description : null,
-      started_on: startedOn ? startedOn : null,
-    };
+    const payload = project
+      ? {
+          title,
+          description: description ? description : null,
+          started_on: startedOn ? startedOn : null,
+        }
+      : {
+          title,
+          ...(description && { description }),
+          ...(startedOn && { started_on: startedOn }),
+        };
     setPending(true);
     setError(null);
     try {

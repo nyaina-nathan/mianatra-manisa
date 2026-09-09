@@ -343,10 +343,6 @@ export type projectsUpdateOneRequiredWithoutCountsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.projectsUpdateToOneWithWhereWithoutCountsInput, Prisma.projectsUpdateWithoutCountsInput>, Prisma.projectsUncheckedUpdateWithoutCountsInput>
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type projectsCreateNestedManyWithoutUsersInput = {
   create?: Prisma.XOR<Prisma.projectsCreateWithoutUsersInput, Prisma.projectsUncheckedCreateWithoutUsersInput> | Prisma.projectsCreateWithoutUsersInput[] | Prisma.projectsUncheckedCreateWithoutUsersInput[]
   connectOrCreate?: Prisma.projectsCreateOrConnectWithoutUsersInput | Prisma.projectsCreateOrConnectWithoutUsersInput[]

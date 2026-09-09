@@ -439,13 +439,24 @@ export function ProjectDetailView({ projectId }: ProjectDetailViewProps) {
         onConfirm={handleEntryDeleteConfirm}
         body={
           dialogState.kind === "deleteEntry" ? (
-            <p className="text-sm text-ink/70">
-              This permanently deletes the entry logged on{" "}
-              <span className="font-semibold text-ink">
-                {dialogState.entry.logged_on ?? "no date"}
-              </span>
-              .
-            </p>
+            <>
+              <p className="text-sm text-ink/70">
+                This permanently deletes the entry logged on{" "}
+                <span className="font-semibold text-ink">
+                  {dialogState.entry.logged_on ?? "no date"}
+                </span>
+                .
+              </p>
+              {dialogState.entry.description ? (
+                <p className="text-sm text-ink/70">
+                  &ldquo;
+                  <span className="font-semibold text-ink">
+                    {dialogState.entry.description}
+                  </span>
+                  &rdquo;
+                </p>
+              ) : null}
+            </>
           ) : null
         }
       />

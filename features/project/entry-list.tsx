@@ -27,8 +27,11 @@ export function EntryList({
             <span className="w-10 shrink-0 font-mono text-xs text-ink/60">
               #{startIndex + index + 1}
             </span>
-            <span className="flex-1 font-mono text-sm text-ink">
-              {dateLabel}
+            <span className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className="font-mono text-sm text-ink">{dateLabel}</span>
+              {entry.description ? (
+                <span className="text-sm text-ink/70">{entry.description}</span>
+              ) : null}
             </span>
             <button
               type="button"

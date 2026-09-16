@@ -4,14 +4,14 @@ import type { Count } from "@/libs/counts/types";
 
 type EntryListProps = {
   entries: Count[];
-  startIndex: number;
+  total: number;
   onDelete: (entry: Count) => void;
   onEdit: (entry: Count) => void;
 };
 
 export function EntryList({
   entries,
-  startIndex,
+  total,
   onDelete,
   onEdit,
 }: EntryListProps) {
@@ -25,7 +25,7 @@ export function EntryList({
             className="flex items-center gap-4 rounded-sm border border-ink/50 bg-surface px-4 py-2"
           >
             <span className="w-10 shrink-0 font-mono text-xs text-ink/60">
-              #{startIndex + index + 1}
+              #{total - index}
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-1">
               <span className="font-mono text-sm text-ink">{dateLabel}</span>

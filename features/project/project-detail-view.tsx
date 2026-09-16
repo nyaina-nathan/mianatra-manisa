@@ -366,7 +366,7 @@ export function ProjectDetailView({ projectId }: ProjectDetailViewProps) {
               ) : (
                 <EntryList
                   entries={entries}
-                  startIndex={0}
+                  total={entriesTotal}
                   onDelete={(entry) =>
                     setDialogState({ kind: "deleteEntry", entry })
                   }
